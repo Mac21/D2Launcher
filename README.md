@@ -1,3 +1,6 @@
+## Status
+[![Build status](https://ci.appveyor.com/api/projects/status/dsgc1h1pfk914jsb?svg=true)](https://ci.appveyor.com/project/shalzuth/d2launcher)
+
 # D2Launcher
  Can launch multiple Diablo II instances, in high res, with diff cdkeys. Also has maphack + autotele. Only works on 1.14d
 
