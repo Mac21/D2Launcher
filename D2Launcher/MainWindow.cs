@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
+using D2Launcher.Properties;
 using Microsoft.Win32;
 
 
@@ -21,8 +22,9 @@ namespace D2Launcher
         public MainWindow()
         {
             InitializeComponent();
+            GoogleTracker.trackPage("shalzuth.maphack", "/", "index");
+            GoogleTracker.trackScreen("index");
             GetInstallDir();
-            DumpCdKeys();
             //resolutionBox.Text = "800x600";// Resolution.Width + "x" + Resolution.Height;
             resolutionBox.Text = Resolution.Width + "x" + Resolution.Height;
         }
@@ -50,34 +52,13 @@ namespace D2Launcher
             if (ClassicCdKey != classicCdKey.Text || XpakCdKey != xpakCdKey.Text) UpdateCdKey(procHandle, moduleBase, classicCdKey.Text, xpakCdKey.Text);
             EnableCustomCheckRevision(d2, procHandle);
 
-            //if (File.Exists("D2Mods.dll")) HardcodedDll.Bytes = File.ReadAllBytes(@"D2Mods.dll");
-            var createDllHardcode = false;
-            if (createDllHardcode)
-            {
-                var sb = new StringBuilder();
-                sb.Append(@"using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+            var dll = Resources.D2Mods;
 
-namespace D2Launcher
-{
-    public static class HardcodedDll
-    {
-        public static Byte[] Bytes = new Byte[]{
-");
-                var q = 0; sb.Append(String.Join(", ", HardcodedDll.Bytes.Select(b => (((++q % 16) == 0) ? "\n" : "") + "0x" + b.ToString("X"))));
-                sb.Append(@"};
-    }
-}
-");
-                File.WriteAllText(@"..\D2Launcher\HardcodedDll.cs", sb.ToString());
-            }
+            if (File.Exists("D2Mods.dll")) dll = File.ReadAllBytes(@"D2Mods.dll");
             if (mapHack.Checked)
             {
                 var mm = new ManualMapInjection.Injection.ManualMapInjector(d2);
-                mm.Inject(HardcodedDll.Bytes, procHandle);
+                mm.Inject(dll, procHandle);
             }
             CloseHandle(procHandle);
         }
@@ -86,7 +67,8 @@ namespace D2Launcher
             installDir.Text = @"C:\Program Files (x86)\Diablo II\";
             if (!File.Exists(installDir.Text + "Game.exe")) installDir.Text = @"C:\Program Files\Diablo II\";
             if (!File.Exists(installDir.Text + "Game.exe")) installDir.Text = Registry.CurrentUser.OpenSubKey("Software\\Blizzard Entertainment\\Diablo II").GetValue("InstallPath").ToString();
-            if (!File.Exists(installDir.Text + "Game.exe")) throw new Exception("can't find d2 install");
+            if (!File.Exists(installDir.Text + "Game.exe")) MessageBox.Show("Diablo II installation couldn't be found! Please input install dir.", "D2Launcher Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            else DumpCdKeys();
         }
         void DumpCdKeys()
         {
