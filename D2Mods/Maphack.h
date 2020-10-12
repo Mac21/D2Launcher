@@ -77,7 +77,7 @@ public:
 			if ((cellNo > 0) && (cellNo < 1258))
 			{
 				AutomapCell* cell = D2CLIENT_NewAutomapCell();
-        cell->nCellNo = (WORD)cellNo;
+				cell->nCellNo = (WORD)cellNo;
 				int x = (preset->dwPosX + (room->dwPosX * 5));
 				int y = (preset->dwPosY + (room->dwPosY * 5));
 				cell->xPixel = (WORD)(((x - y) * 16) / 10) + 1;
