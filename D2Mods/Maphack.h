@@ -21,22 +21,12 @@ DWORD __declspec(naked) __fastcall D2CLIENT_InitAutomapLayer_STUB(DWORD nLayerNo
 
 class Maphack {
 public:
-	/*
-	void OnLoop();
-	void OnDraw();
-	void OnAutomapDraw();
-	void OnGameJoin();
-	void OnGamePacketRecv(BYTE* packet, bool* block);
-
-	void ResetRevealed();
-	void ResetPatches();
-
-	void OnKey(bool up, BYTE key, LPARAM lParam, bool* block);*/
 	static AutomapLayer* InitLayer(int level) {
 		AutomapLayer2* layer = D2COMMON_GetLayer(level);
 		if (!layer) return NULL;
 		return (AutomapLayer*)D2CLIENT_InitAutomapLayer_STUB(layer->nLayerNo);
 	}
+
 	void RevealRoom(Room2* room)
 	{
 		for (PresetUnit* preset = room->pPreset; preset; preset = preset->pPresetNext)
@@ -80,33 +70,24 @@ public:
 						cellNo = obj->nAutoMap;//Set the cell number then.
 				}
 			}
-			else if (preset->dwType == UNIT_TILE) {
-				/*LevelList* level = new LevelList;
-				for (RoomTile* tile = room->pRoomTiles; tile; tile = tile->pNext) {
-					if (*(tile->nNum) == preset->dwTxtFileNo) {
-						level->levelId = tile->pRoom2->pLevel->dwLevelNo;
-						break;
-					}
-				}
-				level->x = (preset->dwPosX + (room->dwPosX * 5));
-				level->y = (preset->dwPosY + (room->dwPosY * 5));
-				level->act = room->pLevel->pMisc->pAct->dwAct;
-				automapLevels.push_back(level);*/
-			}
+      // Add code to put star on tal's tomb
+			//else if (preset->dwType == UNIT_TILE) {}
 
 			//Draw the cell if wanted.
 			if ((cellNo > 0) && (cellNo < 1258))
 			{
 				AutomapCell* cell = D2CLIENT_NewAutomapCell();
+        cell->nCellNo = (WORD)cellNo;
 				int x = (preset->dwPosX + (room->dwPosX * 5));
 				int y = (preset->dwPosY + (room->dwPosY * 5));
-				cell->xPixel = (((x - y) * 16) / 10) + 1;
-				cell->yPixel = (((y + x) * 8) / 10) - 3;
+				cell->xPixel = (WORD)(((x - y) * 16) / 10) + 1;
+				cell->yPixel = (WORD)(((y + x) * 8) / 10) - 3;
 				D2CLIENT_AddAutomapCell(cell, &((*p_D2CLIENT_AutomapLayer)->pObjects));
 			}
 
 		}
 	}
+
 	void RevealLevel(Level* level)
 	{
 		if (!level || level->dwLevelNo < 0 || level->dwLevelNo > 255) return;
@@ -123,6 +104,7 @@ public:
 			if (roomData) D2COMMON_RemoveRoomData(level->pMisc->pAct, level->dwLevelNo, room->dwPosX, room->dwPosY, room->pRoom1);
 		}
 	}
+
 	void RevealAct(int act)
 	{
 		UnitAny* player = D2CLIENT_GetPlayerUnit();
@@ -137,8 +119,8 @@ public:
 			RevealLevel(pLevel);
 		}
 		InitLayer(player->pPath->pRoom1->pRoom2->pLevel->dwLevelNo);
-		//D2COMMON_UnloadAct(pAct);
 	}
+
 	void RevealGame() {
 		for (int act = 1; act <= ((*p_D2CLIENT_ExpCharFlag) ? 5 : 4); act++) RevealAct(act);
 	}
