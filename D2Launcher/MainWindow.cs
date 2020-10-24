@@ -19,15 +19,15 @@ namespace D2Launcher
         String ClassicCdKey = "";
         String XpakCdKey = "";
         Rectangle Resolution = Screen.PrimaryScreen.Bounds;
+
         public MainWindow()
         {
             InitializeComponent();
-            GoogleTracker.trackPage("shalzuth.maphack", "/", "index");
-            GoogleTracker.trackScreen("index");
             GetInstallDir();
-            //resolutionBox.Text = "800x600";// Resolution.Width + "x" + Resolution.Height;
-            resolutionBox.Text = Resolution.Width + "x" + Resolution.Height;
+            resolutionBox.Text = "800x600";
+            //resolutionBox.Text = Resolution.Width + "x" + Resolution.Height;
         }
+
         void launchButton_Click(object sender, EventArgs e)
         {
             var si = new STARTUP_INFO();
@@ -50,18 +50,18 @@ namespace D2Launcher
                 SetWindowPos(d2.MainWindowHandle, 0, 0, 0, Resolution.Width, Resolution.Height, 0);
             }
             if (ClassicCdKey != classicCdKey.Text || XpakCdKey != xpakCdKey.Text) UpdateCdKey(procHandle, moduleBase, classicCdKey.Text, xpakCdKey.Text);
-            EnableCustomCheckRevision(d2, procHandle);
 
             var dll = Resources.D2Mods;
 
             if (File.Exists("D2Mods.dll")) dll = File.ReadAllBytes(@"D2Mods.dll");
             if (mapHack.Checked)
             {
-                var mm = new ManualMapInjection.Injection.ManualMapInjector(d2);
-                mm.Inject(dll, procHandle);
+               var mm = new ManualMapInjection.Injection.ManualMapInjector(d2);
+               mm.Inject(dll, procHandle);
             }
             CloseHandle(procHandle);
         }
+
         void GetInstallDir()
         {
             installDir.Text = @"C:\Program Files (x86)\Diablo II\";
@@ -70,6 +70,7 @@ namespace D2Launcher
             if (!File.Exists(installDir.Text + "Game.exe")) MessageBox.Show("Diablo II installation couldn't be found! Please input install dir.", "D2Launcher Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             else DumpCdKeys();
         }
+
         void DumpCdKeys()
         {
             var si = new STARTUP_INFO();
@@ -91,55 +92,11 @@ namespace D2Launcher
             XpakCdKey = xpakCdKey.Text = Encoding.UTF8.GetString(buffer);
             tempD2.Kill();
         }
+
         [DllImport("kernel32")] static extern IntPtr GetProcAddress(IntPtr hModule, String procName);
         [DllImport("kernel32")] static extern IntPtr GetModuleHandle(String lpModuleName);
         [DllImport("kernel32")] static extern IntPtr LoadLibrary(string lpFileName);
-        static Byte[] CustomCheckRevisionFunc = new byte[] {0x55, 0x8B, 0xEC, 0x83, 0xEC, 0x0C, 0x53, 0x8B, 0x5D, 0x20, 0x8D, 0x45, 0xF4, 0x56, 0x57, 0x33,
-0xC9, 0xC7, 0x45, 0xF4, 0x08, 0x00, 0x00, 0x00, 0x51, 0x51, 0x50, 0x53, 0x6A, 0x01, 0x51, 0xFF,
-0x75, 0x14, 0xFF, 0x15, 0x20, 0x20, 0x00, 0x10, 0x33, 0xC0, 0xC7, 0x43, 0x04, 0x3A, 0x31, 0x2E,
-0x31, 0x68, 0x00, 0x00, 0x00, 0xF0, 0x6A, 0x01, 0x50, 0x50, 0x88, 0x43, 0x10, 0x89, 0x45, 0x14,
-0x89, 0x45, 0x20, 0x89, 0x45, 0xF8, 0x8D, 0x45, 0x14, 0x50, 0xC7, 0x43, 0x08, 0x34, 0x2E, 0x33,
-0x2E, 0xC7, 0x43, 0x0C, 0x37, 0x31, 0x3A, 0x01, 0xFF, 0x15, 0x08, 0x20, 0x00, 0x10, 0x8D, 0x45,
-0x20, 0x50, 0x6A, 0x00, 0x6A, 0x00, 0x68, 0x04, 0x80, 0x00, 0x00, 0xFF, 0x75, 0x14, 0xFF, 0x15,
-0x10, 0x20, 0x00, 0x10, 0x6A, 0x00, 0x6A, 0x10, 0x53, 0xFF, 0x75, 0x20, 0xFF, 0x15, 0x04, 0x20,
-0x00, 0x10, 0x8B, 0x35, 0x14, 0x20, 0x00, 0x10, 0x8D, 0x45, 0xF8, 0x6A, 0x00, 0x50, 0x6A, 0x00,
-0x6A, 0x02, 0xFF, 0x75, 0x20, 0xFF, 0xD6, 0x8B, 0x7D, 0x1C, 0x8D, 0x45, 0xF8, 0x6A, 0x00, 0x50,
-0x57, 0x6A, 0x02, 0xFF, 0x75, 0x20, 0xFF, 0xD6, 0xFF, 0x75, 0x20, 0xFF, 0x15, 0x00, 0x20, 0x00,
-0x10, 0x6A, 0x00, 0xFF, 0x75, 0x14, 0xFF, 0x15, 0x0C, 0x20, 0x00, 0x10, 0x83, 0x65, 0xFC, 0x00,
-0x8D, 0x45, 0xFC, 0x8B, 0x35, 0x1C, 0x20, 0x00, 0x10, 0x50, 0x6A, 0x00, 0x68, 0x01, 0x00, 0x00,
-0x40, 0x6A, 0x14, 0x57, 0xFF, 0xD6, 0x8D, 0x45, 0xFC, 0x50, 0x53, 0x68, 0x01, 0x00, 0x00, 0x40,
-0x6A, 0x14, 0x57, 0xFF, 0xD6, 0x8B, 0x03, 0x89, 0x07, 0x8B, 0x43, 0x04, 0x8B, 0x4B, 0x10, 0x89,
-0x03, 0x8B, 0x43, 0x08, 0x89, 0x43, 0x04, 0x8B, 0x43, 0x0C, 0x89, 0x4B, 0x0C, 0x8B, 0x4B, 0x14,
-0x89, 0x4B, 0x10, 0x8B, 0x4B, 0x18, 0x89, 0x4B, 0x14, 0x8B, 0x4D, 0xFC, 0x89, 0x43, 0x08, 0x33,
-0xC0, 0x5F, 0x5E, 0xC6, 0x44, 0x19, 0xFC, 0x00, 0x40, 0x5B, 0xC9, 0xC2, 0x1C, 0x00 };
-        void EnableCustomCheckRevision(Process proc, IntPtr procHandle)
-        {
-            var crypt32 = LoadLibrary("crypt32.dll");
-            var advapi32 = GetModuleHandle("advapi32.dll");
-            var addrs = new List<IntPtr>();
-            addrs.Add(GetProcAddress(crypt32, "CryptStringToBinaryA"));
-            addrs.Add(GetProcAddress(advapi32, "CryptAcquireContextW"));
-            addrs.Add(GetProcAddress(advapi32, "CryptCreateHash"));
-            addrs.Add(GetProcAddress(advapi32, "CryptHashData"));
-            addrs.Add(GetProcAddress(advapi32, "CryptGetHashParam"));
-            addrs.Add(GetProcAddress(advapi32, "CryptDestroyHash"));
-            addrs.Add(GetProcAddress(advapi32, "CryptReleaseContext"));
-            addrs.Add(GetProcAddress(crypt32, "CryptBinaryToStringA"));
-            var refAddrs = new List<UInt32> { 0x22, 0x58, 0x6e, 0x7c, 0x82, 0xab, 0xb6, 0xc3};
-            var ptrs = VirtualAllocEx(procHandle, IntPtr.Zero, 4 * 8, 0x3000, 0x4);
-            for (int i = 0; i < addrs.Count; i++)
-            {
-                WriteProcessMemory(procHandle, ptrs + i * 4, BitConverter.GetBytes((Int32)addrs[i]), 4, 0);
-                Array.Copy(BitConverter.GetBytes((Int32)ptrs + i * 4), 0, CustomCheckRevisionFunc, refAddrs[i] + 2, 4);
-            }
-            var newFunc = VirtualAllocEx(procHandle, IntPtr.Zero, CustomCheckRevisionFunc.Length, 0x3000, 0x4);
-            WriteProcessMemory(procHandle, newFunc, CustomCheckRevisionFunc, CustomCheckRevisionFunc.Length, 0);
-            var movNewFuncIntoEsi = new List<Byte>();
-            movNewFuncIntoEsi.Add(0xBE);
-            movNewFuncIntoEsi.AddRange(BitConverter.GetBytes((Int32)newFunc));
-            movNewFuncIntoEsi.AddRange(new Byte[5] { 0x90, 0x90, 0x90, 0x90, 0x90 });
-            WriteProcessMemory(procHandle, (IntPtr)0x400000 + 0x11E818, movNewFuncIntoEsi.ToArray(), movNewFuncIntoEsi.Count, 0);
-        }
+
         void SetResolution(IntPtr procHandle, IntPtr moduleBase)
         {
             var xResAddrs800 = new Int32[] { 0xf559e, 0x111e05, 0x2c82e0, 0x4BA3C, 0x2c7b39, 0x109c2b, 0x11125b, 0x2b5023, 0x109910 };
@@ -165,6 +122,7 @@ namespace D2Launcher
             var setCursorPos = new Int32[] { 0x68770 + 0x72, 0x68770 + 0x8d, 0x68840 + 0x7d, 0xfa6b0 + 0x92 };
             foreach (var addr in setCursorPos) WriteProcessMemory(procHandle, moduleBase + addr, new Byte[] { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 }, 6, 0);
         }
+
         void SideloadBeltTxt(IntPtr procHandle, IntPtr moduleBase)
         {
             var beltInfo = VirtualAllocEx(procHandle, IntPtr.Zero, 8 * 0x1000, 0x3000, 0x4);
@@ -195,6 +153,7 @@ namespace D2Launcher
             foreach (var addr in beltAddrs) FindAndReplace(procHandle, moduleBase + addr, 0x10, 0x96D4F8, (UInt32)beltInfo);
             WriteProcessMemory(procHandle, beltInfo, BitConverter.GetBytes(beltInfo.ToInt32()), 4, 0);
         }
+
         void SideloadInventoryTxt(IntPtr procHandle, IntPtr moduleBase)
         {
             var inventoryInfo = VirtualAllocEx(procHandle, IntPtr.Zero, 8 * 0x1000, 0x3000, 0x4);
@@ -255,6 +214,7 @@ namespace D2Launcher
             foreach (var addr in inventoryAddrs) FindAndReplace(procHandle, moduleBase + addr, 0x10, 0x96D4F4, (UInt32)inventoryInfoPtr);
             WriteProcessMemory(procHandle, inventoryInfoPtr, BitConverter.GetBytes(inventoryInfo.ToInt32()), 4, 0);
         }
+
         void UpdateCdKey(IntPtr procHandle, IntPtr moduleBase, String classic, String xpack)
         {
             var classicCdKeyPtr = VirtualAllocEx(procHandle, IntPtr.Zero, 52, 0x3000, 0x4);
@@ -275,6 +235,7 @@ namespace D2Launcher
             WriteProcessMemory(procHandle, xpCdKeyPtr, Encoding.UTF8.GetBytes(xpack), 26, 0); // write cdkey into cdkey ptr
             WriteProcessMemory(procHandle, moduleBase + 0x48274C, BitConverter.GetBytes(xpCdKeyPtr.ToInt32()), 4, 0); // writing new cdkey pptr (mov dword_88274C, xpCdKeyPtr)
         }
+
         Boolean FindAndReplace(IntPtr procHandle, IntPtr baseAddr, Int32 searchLength, UInt16 oldVal, UInt16 newVal)
         {
             var b = new Byte[searchLength * 2];
@@ -289,6 +250,7 @@ namespace D2Launcher
             }
             return false;
         }
+
         Boolean FindAndReplace(IntPtr procHandle, IntPtr baseAddr, Int32 searchLength, UInt32 oldVal, UInt32 newVal)
         {
             var b = new Byte[searchLength];
@@ -304,6 +266,7 @@ namespace D2Launcher
             }
             return false;
         }
+
         class Box
         {
             internal Int32 Left;
@@ -312,6 +275,7 @@ namespace D2Launcher
             internal UInt16 Height;
             internal Byte HackX;
             internal Byte HackY;
+
             internal Box(Int32 l, Int32 t, UInt16 w, UInt16 h, Byte hackX = 0, Byte hackY = 0)
             {
                 Left = l;
@@ -321,6 +285,7 @@ namespace D2Launcher
                 HackX = hackX;
                 HackY = hackY;
             }
+
             public Byte[] GetBytes(Int32 offsetX, Int32 offsetY)
             {
                 var b = BitConverter.GetBytes(offsetX + Left).ToList();
@@ -349,6 +314,7 @@ namespace D2Launcher
         [DllImport("user32")] static extern Int32 GetWindowLong(IntPtr hWnd, Int32 nIndex);
         [DllImport("user32")] static extern Boolean SetWindowPos(IntPtr hwnd, Int32 hWndInsertAfter, Int32 x, Int32 Y, Int32 cx, Int32 cy, Int32 wFlags);
         [DllImport("kernel32")] static extern IntPtr CreateRemoteThread(IntPtr hProcess, IntPtr lpThreadAttributes, UInt32 dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, UInt32 dwCreationFlags, IntPtr lpThreadId);
+
         struct STARTUP_INFO
         {
             internal UInt32 cb;
@@ -370,6 +336,7 @@ namespace D2Launcher
             internal IntPtr hStdOutput;
             internal IntPtr hStdError;
         }
+
         struct PROCESS_INFORMATION
         {
             internal IntPtr hProcess;
@@ -389,5 +356,5 @@ namespace D2Launcher
             Resolution.Width = Int32.Parse(resolutionBox.Text.Split('x')[0]);
             Resolution.Height = Int32.Parse(resolutionBox.Text.Split('x')[1]);
         }
-    }
+  }
 }

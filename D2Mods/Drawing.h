@@ -13,6 +13,7 @@ wchar_t* AnsiToUnicode(const char* str, UINT codepage = CP_UTF8) {
 	MultiByteToWideChar(codepage, 0, str, -1, buf, len);
 	return buf;
 }
+
 POINT CalculateTextLen(const wchar_t* szwText, int Font) {
 	POINT ret = { 0, 0 };
 	if (!szwText) return ret;
@@ -23,6 +24,7 @@ POINT CalculateTextLen(const wchar_t* szwText, int Font) {
 	D2WIN_SetTextSize(dwOldSize);
 	return ret;
 }
+
 POINT CalculateTextLen(const char* szwText, int Font) {
 	POINT ret = { 0, 0 };
 	if (!szwText) return ret;
@@ -31,6 +33,7 @@ POINT CalculateTextLen(const char* szwText, int Font) {
 	delete[] buf;
 	return ret;
 }
+
 bool IsInGame(void) {
 	UnitAny* player = D2CLIENT_GetPlayerUnit();
 	Control* firstControl = *p_D2WIN_FirstControl;
@@ -40,6 +43,7 @@ bool IsInGame(void) {
 	}
 	return false;
 }
+
 POINT ScreenToAutomap(int x, int y) {
 	POINT result = { 0, 0 };
 	x *= 32;
@@ -53,10 +57,12 @@ POINT ScreenToAutomap(int x, int y) {
 	}
 	return result;
 }
+
 POINT GetScreenSize() {
 	POINT ingame = { *p_D2CLIENT_ScreenSizeX, *p_D2CLIENT_ScreenSizeY }, oog = { 800, 600 };
 	return IsInGame() ? ingame : oog;
 }
+
 POINT GetTextSize(std::string text, unsigned int font) {
 	unsigned int height[] = { 10,11,18,24,10,13,7,13,10,12,8,8,7,12 };
 	DWORD width, fileNo;
@@ -68,6 +74,7 @@ POINT GetTextSize(std::string text, unsigned int font) {
 	delete[] wString;
 	return point;
 }
+
 bool DrawString(unsigned int x, unsigned int y, int align, unsigned int font, TextColor color, std::string text, ...) {
 	char buffer[4096];
 	va_list arg;
@@ -86,10 +93,13 @@ bool DrawString(unsigned int x, unsigned int y, int align, unsigned int font, Te
 	delete[] wString;
 	return true;
 }
+
 bool DrawBox(unsigned int x, unsigned int y, unsigned int xSize, unsigned int ySize, unsigned int color, BoxTrans trans) {
 	D2GFX_DrawRectangle(x, y, x + xSize, y + ySize, color, trans);
 	return true;
 }
+
+>>>>>>> Add project files.
 bool DrawCrosshook(unsigned int x, unsigned int y, unsigned int color) {
 	CHAR szLines[][2] = { 0,-2, 4,-4, 8,-2, 4,0, 8,2, 4,4, 0,2, -4,4, -8,2, -4,0, -8,-2, -4,-4, 0,-2 };
 	for (unsigned int n = 0; n < 12; n++) {
@@ -97,6 +107,10 @@ bool DrawCrosshook(unsigned int x, unsigned int y, unsigned int color) {
 	}
 	return true;
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> Add project files.
 bool IsValidMonster(UnitAny* pUnit)
 {
 	if (!pUnit) return false;
@@ -107,6 +121,7 @@ bool IsValidMonster(UnitAny* pUnit)
 	DWORD badMonIds[] = { 227, 283, 326, 327, 328, 329, 330, 410, 411, 412, 413, 414, 415, 416, 366, 406, 351, 352, 353, 266, 408, 516, 517, 518, 519, 522, 523, 543, 543, 545 };
 	for (DWORD n = 0; n < 30; n++) if (pUnit->dwTxtFileNo == badMonIds[n]) return false;
 	if (D2COMMON_GetUnitStat(pUnit, 172, 0) == 2) return false;
+<<<<<<< HEAD
 	/*wchar_t* name = D2CLIENT_GetUnitName(pUnit);
 	char* tmp = UnicodeToAnsi(name);
 
@@ -120,6 +135,13 @@ bool IsValidMonster(UnitAny* pUnit)
 bool IsObjectChest(ObjectTxt* obj)
 {
 	//ObjectTxt *obj = D2COMMON_GetObjectTxt(objno);
+=======
+	return true;
+}
+
+bool IsObjectChest(ObjectTxt* obj)
+{
+>>>>>>> Add project files.
 	return (obj->nSelectable0 && (
 		(obj->nOperateFn == 1) || //bed, undef grave, casket, sarc
 		(obj->nOperateFn == 3) || //basket, urn, rockpile, trapped soul
@@ -135,6 +157,7 @@ bool IsObjectChest(ObjectTxt* obj)
 		(obj->nOperateFn == 68)    //evil urn
 		));
 }
+<<<<<<< HEAD
 void DrawAutomapPrimitives() {
 	UnitAny* player = D2CLIENT_GetPlayerUnit();
 	if (!player || !player->pAct || player->pPath->pRoom1->pRoom2->pLevel->dwLevelNo == 0) return;
@@ -239,10 +262,68 @@ void GameDraw_Interception(void) {
 	else
 		DrawString(1, GetScreenSize().y - 1, 0, 6, TextColor::Gold, "shalzuth's maphack");
 }
+=======
+
+void DrawAutomapPrimitives() {
+	UnitAny* player = D2CLIENT_GetPlayerUnit();
+	if (!player || !player->pAct || !player->pPath ||
+      !player->pPath->pRoom1 || !player->pPath->pRoom1->pRoom2 ||
+      !player->pPath->pRoom1->pRoom2->pLevel || player->pPath->pRoom1->pRoom2->pLevel->dwLevelNo == 0)
+		return;
+	auto MyPos = ScreenToAutomap(D2CLIENT_GetUnitX(player), D2CLIENT_GetUnitY(player));
+	// Monster Tracking
+  for (int j = 0; j < 128; ++j) {
+    for (UnitAny* unit = p_D2CLIENT_ServerSideUnitHashTables[UNIT_MONSTER].table[j]; unit; unit = unit->pListNext) {
+      DWORD xPos, yPos;
+      if (unit->dwType == UNIT_MONSTER && IsValidMonster(unit)) {
+        int color = 0x5B; // Red
+				if (unit->pMonsterData->fBoss & 1) color = 0x84; // Green
+				if (unit->pMonsterData->fChamp & 1) color = 0x91; // Blue
+				if (unit->pMonsterData->fMinion & 1) color = 0x60; // Orange
+
+        xPos = unit->pPath->xPos;
+        yPos = unit->pPath->yPos;
+
+        POINT automapLoc = ScreenToAutomap(xPos, yPos);
+        DrawCrosshook(automapLoc.x, automapLoc.y, color);
+      } 
+    }
+	}
+
+	// Object tracking
+  for (int j = 0; j < 128; ++j) {
+    for (UnitAny* unit = p_D2CLIENT_ServerSideUnitHashTables[UNIT_OBJECT].table[j]; unit; unit = unit->pListNext) {
+      DWORD xPos, yPos;
+			if (unit->dwType == UNIT_OBJECT && !unit->dwMode && IsObjectChest(unit->pObjectData->pTxt)) {
+        xPos = unit->pObjectPath->dwPosX;
+        yPos = unit->pObjectPath->dwPosY;
+        auto automapLoc = ScreenToAutomap(xPos, yPos);
+        DrawBox(automapLoc.x - 1, automapLoc.y - 1, 4, 4, 255, BoxTrans::BTHighlight);
+      }
+    }
+	}
+
+	// Item tracking
+  for (int j = 0; j < 128; j++) {
+    for (UnitAny* unit = p_D2CLIENT_ServerSideUnitHashTables[UNIT_ITEM].table[j]; unit; unit = unit->pListNext) {
+			if (unit->dwType == UNIT_ITEM && (unit->dwMode == ITEM_MODE_ON_GROUND || unit->dwMode == ITEM_MODE_BEING_DROPPED)) {
+				if (unit->pItemData->dwQuality >= ITEM_QUALITY_SUPERIOR) {
+					ItemTxt* txt = D2COMMON_GetItemText(unit->dwTxtFileNo);
+					if (txt) {
+            PrintText(TextColor::Red, "ÿc4Item Dropped:ÿc1 %s", txt->szName2);
+					}
+				}
+      }
+    }
+	}
+
+}
+
 void GameAutomapDraw(void) {
 	auto MyPos = ScreenToAutomap(D2CLIENT_GetUnitX(D2CLIENT_GetPlayerUnit()), D2CLIENT_GetUnitY(D2CLIENT_GetPlayerUnit()));
 	DrawAutomapPrimitives();
 }
+
 void __declspec(naked) GameAutomapDraw_Interception()
 {
 	__asm

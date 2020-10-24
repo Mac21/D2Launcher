@@ -1,6 +1,7 @@
 #pragma once
 #ifndef _CONSTANTS_H
 #define _CONSTANTS_H
+
 enum TextColor {
     Disabled = -1,
     White = 0,
@@ -17,6 +18,7 @@ enum TextColor {
     Purple,
     Silver = 15
 };
+
 enum BoxTrans { BTThreeFourths, BTOneHalf, BTOneFourth, BTWhite, BTBlack, BTNormal, BTScreen, BTHighlight, BTFull };
 //////////////////////////////////////////////////////////////////////
 // Attack Types
@@ -136,6 +138,7 @@ enum OOG_Location {
     OOG_CHARACTER_SELECT_CHANGE_REALM,
     OOG_UNABLE_TO_CONNECT_TCPIP
 };
+
 //////////////////////////////////////////////////////////////////////
 // PVP Flags
 //////////////////////////////////////////////////////////////////////
@@ -162,7 +165,6 @@ enum OOG_Location {
 //////////////////////////////////////////////////////////////////////////
 // Ladder Flags
 //////////////////////////////////////////////////////////////////////////
-
 #define LADDERFLAG_NONE 0x00
 #define LADDERFLAG_SET 0x01 // classic ladder, classic ladder hc, expansion ladder hc
 #define LADDERFLAG_EXPANSION_NORMAL 0x03
@@ -384,6 +386,22 @@ enum {
 #define EXIT 6
 #define XY 7
 #define EXIT_MULTI 8
+
+///////////////////////////////////////////////////
+// Color Replacements
+///////////////////////////////////////////////////
+#define WHITE_COLOR_REPLACMENT "ÿc0"
+#define RED_COLOR_REPLACEMENT "ÿc1"
+#define GREEN_COLOR_REPLACEMENT "ÿc2"
+#define BLUE_COLOR_REPLACEMENT "ÿc3"
+#define GOLD_COLOR_REPLACEMENT "ÿc4"
+#define GRAY_COLOR_REPLACEMENT "ÿc5"
+#define BLACK_COLOR_REPLACEMENT "ÿc6"
+#define TAN_COLOR_REPLACEMENT "ÿc7"
+#define ORANGE_COLOR_REPLACEMENT "ÿc8"
+#define YELLOW_COLOR_REPLACEMENT "ÿc9"
+#define PURPLE_COLOR_REPLACEMENT "ÿc;"
+#define DARK_GREEN_COLOR_REPLACEMENT "ÿc:"
 
 ///////////////////////////////////////////////////
 // Spell Stats

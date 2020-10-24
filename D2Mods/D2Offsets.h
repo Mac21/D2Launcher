@@ -4,6 +4,7 @@
 #ifndef __D2PTRS_H__
 #define __D2PTRS_H__
 
+#include <windows.h>
 #include "D2Structs.h"
 
 #pragma warning(push)
@@ -234,8 +235,8 @@
     ASMPTR(D2CLIENT, GameAddUnit_I, 0x628E0) // 6FB128E0
 
     ASMPTR(D2CLIENT, LoadAct_1, 0x59150)
-    ASMPTR(D2CLIENT, LoadAct_2, 0x591A0)
-
+    ASMPTR(D2CLIENT, LoadAct_2, 0x591A0) // 004591A0-BASE
+    
     // ASMPTR(D2CLIENT, GetUnitFromId_I, 0x61480) //GetUnitFromId_II //6FB11480
     // VARPTR(D2CLIENT, pUnitTable, POINT, 0x1047B8) //6FBB47B8 //GetUnitFromId_I //IrC
 
@@ -467,16 +468,18 @@
 #define D2GFX_DrawFrame(Rect) D2GFX_DrawRectFrame_STUB(Rect)
 
 Level* GetLevel(Act* pAct, int level) {
-    if (level < 0 || !pAct) return NULL;
+    if ((level < 0) || !pAct || !pAct->pMisc) return NULL;
     for (Level* pLevel = pAct->pMisc->pLevelFirst; pLevel; pLevel = pLevel->pNextLevel) {
         if (!pLevel) break;
-        if (pLevel->dwLevelNo == level && pLevel->dwPosX > 0) return pLevel;
+        if (pLevel->dwLevelNo == level) return pLevel;
     }
     return D2COMMON_GetLevel(pAct->pMisc, level);
 }
+
 DWORD GetDistanceSquared(DWORD x1, DWORD y1, DWORD x2, DWORD y2) {
     return (DWORD)sqrt((double)(((x1 - x2) * (x1 - x2)) + ((y1 - y2) * (y1 - y2))));
 }
+
 void PrintText(DWORD Color, const char* szText, ...) {
     char szBuffer[152] = { 0 };
     va_list Args;
@@ -487,6 +490,7 @@ void PrintText(DWORD Color, const char* szText, ...) {
     MultiByteToWideChar(1252, 1, szBuffer, 152, Buffer, 304);
     D2CLIENT_PrintGameString(Buffer, Color);
 }
+
 bool ClickMap(DWORD dwClickType, int wX, int wY) {
     POINT Click = { wX, wY };
     D2COMMON_MapToAbsScreen(&Click.x, &Click.y);

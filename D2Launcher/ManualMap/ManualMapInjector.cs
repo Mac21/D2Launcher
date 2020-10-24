@@ -1029,6 +1029,41 @@ namespace ManualMapInjection.Injection
             return result;
         }
 
+        public IntPtr Inject(IntPtr dllHandle, IntPtr procHandle)
+        {
+            var handle = GCHandle.Alloc(dllHandle, GCHandleType.Pinned);
+            var result = IntPtr.Zero;
+
+            try
+            {
+                // verify target
+                if (_process == null)
+                {
+                    return result;
+                }
+
+                //OpenTarget();
+                _hProcess = procHandle;
+
+                // inject
+                result = LoadImageToMemory(handle.AddrOfPinnedObject());
+            }
+            catch (Exception e)
+            {
+#if DEBUG
+                Debug.WriteLine($"Unexpected error {e}");
+#endif
+            }
+            finally
+            {
+                // close stuff
+                FreeHandle(handle);
+                //CloseTarget();
+            }
+
+            return result;
+        }
+
         #endregion
 
         public ManualMapInjector(Process p)
