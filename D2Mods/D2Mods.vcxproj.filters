@@ -41,9 +41,6 @@
     <ClInclude Include="TeleportPath.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AutoTele.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ArrayEx.h">
       <Filter>Header Files</Filter>
     </ClInclude>

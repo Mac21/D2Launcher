@@ -72,14 +72,14 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>..\D2Launcher\Resources\</OutDir>
+    <OutDir>../D2Launcher/Resources</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\D2Launcher\Resources\</OutDir>
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>../D2Launcher/Resources/</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -136,6 +136,11 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <PreprocessToFile>false</PreprocessToFile>
+      <Optimization>MaxSpeed</Optimization>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <DebugInformationFormat>None</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -150,6 +155,8 @@
       <DataExecutionPrevention>false</DataExecutionPrevention>
       <BaseAddress>
       </BaseAddress>
+      <LinkTimeCodeGeneration>UseFastLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <TurnOffAssemblyGeneration>true</TurnOffAssemblyGeneration>
     </Link>
     <PostBuildEvent>
       <Command>xcopy "$(TargetPath)" "C:\Program Files (x86)\Diablo II\" /s /i /y</Command>
@@ -179,7 +186,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ArrayEx.h" />
-    <ClInclude Include="AutoTele.h" />
     <ClInclude Include="CollisionMap.h" />
     <ClInclude Include="D2Constants.h" />
     <ClInclude Include="CursorGlitch.h" />

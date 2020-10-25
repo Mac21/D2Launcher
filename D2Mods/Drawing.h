@@ -169,13 +169,18 @@ const static std::array<BYTE, 11> filteredMagicItems = {
 	ITEM_TEXT_TYPE_RING,
 	ITEM_TEXT_TYPE_AMULET,
 	ITEM_TEXT_TYPE_JEWEL,
+	ITEM_TEXT_TYPE_CIRCLET,
 	ITEM_TEXT_TYPE_SMALL_CHARM,
 	ITEM_TEXT_TYPE_LARGE_CHARM,
 	ITEM_TEXT_TYPE_GRAND_CHARM,
-	ITEM_TEXT_TYPE_CIRCLET,
 	ITEM_TEXT_TYPE_AMAZON_BOW,
 	ITEM_TEXT_TYPE_AMAZON_JAV,
 };
+
+static std::string regularFmtStr = "%s%s L%d";
+static std::string ethFmtStr = regularFmtStr +" (Eth)";
+static std::string socketFmtStr = regularFmtStr + " (%d)";
+static std::string ethSocketFmtStr = ethFmtStr + " (%d)";
 
 void DrawAutomapPrimitives() {
 	UnitAny* player = D2CLIENT_GetPlayerUnit();
@@ -216,96 +221,108 @@ void DrawAutomapPrimitives() {
     }
 	}
 
+	// Debug Item Tracking
+	//for (int j = 0; j < 128; j++) {
+	//	for (UnitAny* unit = p_D2CLIENT_ServerSideUnitHashTables[UNIT_ITEM].table[j]; unit; unit = unit->pListNext) {
+	//		if (unit->dwType == UNIT_ITEM &&
+  //        (unit->dwMode == ITEM_MODE_BEING_DROPPED)) {
+  //        ItemTxt* txt = D2COMMON_GetItemText(unit->dwTxtFileNo);
+	//				if (txt) {
+  //          PrintText(TextColor::Red, "Type: %s%d", GREEN_COLOR_REPLACEMENT, txt->nType);
+	//				}
+	//		}
+	//	}
+	//}
+
 	// Item tracking
   for (int j = 0; j < 128; j++) {
     for (UnitAny* unit = p_D2CLIENT_ServerSideUnitHashTables[UNIT_ITEM].table[j]; unit; unit = unit->pListNext) {
 			if (unit->dwType == UNIT_ITEM &&
           (unit->dwFlags & UNITFLAG_NO_EXPERIENCE) == 0x0 &&
           (unit->dwMode == ITEM_MODE_ON_GROUND || unit->dwMode == ITEM_MODE_BEING_DROPPED)) {
-				unit->dwFlags |= UNITFLAG_NO_EXPERIENCE;
+        unit->dwFlags |= UNITFLAG_REVEALED;
+
+        bool overRideQualityFilter = false;
+				bool isEth = false;
+				int numSockets = 0;
+        const char* colorReplacement = WHITE_COLOR_REPLACMENT;
+
+        if (unit->pItemData->dwFlags & ITEM_FLAG_HASSOCKETS) {
+          overRideQualityFilter = true;
+          colorReplacement = GRAY_COLOR_REPLACEMENT;
+          numSockets = D2COMMON_GetUnitStat(unit, STAT_SOCKETS, 0);
+        }
+        if (unit->pItemData->dwFlags & ITEM_FLAG_ETHEREAL) {
+          overRideQualityFilter = true;
+					isEth = true;
+          colorReplacement = GRAY_COLOR_REPLACEMENT;
+        }
+
         ItemTxt* txt = D2COMMON_GetItemText(unit->dwTxtFileNo);
         if (txt) {
-					const char* colorReplacement = WHITE_COLOR_REPLACMENT;
-					bool isEth = false;
-					bool hasSockets = false;
-					bool overRideQualityFilter = false;
+          switch (txt->nType) {
+            case ITEM_TEXT_TYPE_RUNE:
+            case ITEM_TEXT_TYPE_QUEST:
+              colorReplacement = GOLD_COLOR_REPLACEMENT;
+              overRideQualityFilter = true;
+              break;
+            case ITEM_TEXT_TYPE_SMALL_CHARM:
+            case ITEM_TEXT_TYPE_LARGE_CHARM:
+            case ITEM_TEXT_TYPE_GRAND_CHARM: 
+              colorReplacement = BLUE_COLOR_REPLACEMENT;
+              overRideQualityFilter = true;
+              break;
+            case ITEM_TEXT_TYPE_AMETHYST_GEM:
+            case ITEM_TEXT_TYPE_DIAMOND_GEM:
+            case ITEM_TEXT_TYPE_EMERALD_GEM:
+            case ITEM_TEXT_TYPE_RUBY_GEM:
+            case ITEM_TEXT_TYPE_SAPPHIRE_GEM:
+            case ITEM_TEXT_TYPE_TOPAZ_GEM:
+            case ITEM_TEXT_TYPE_SKULL:
+              colorReplacement = PURPLE_COLOR_REPLACEMENT;
+              overRideQualityFilter = true;
+              break;
+          }
 
 					switch (unit->pItemData->dwQuality) {
-            case ITEM_QUALITY_MAGIC: {
+            case ITEM_QUALITY_MAGIC: 
 							if (!std::binary_search(filteredMagicItems.begin(), filteredMagicItems.end(), txt->nType)) {
+                unit->dwFlags |= UNITFLAG_NO_EXPERIENCE;
 								continue;
 							}
 							colorReplacement = BLUE_COLOR_REPLACEMENT;
               break;
-            }
-            case ITEM_QUALITY_SET: {
+            case ITEM_QUALITY_SET:
 							colorReplacement = GREEN_COLOR_REPLACEMENT;
 							break;
-            }
-            case ITEM_QUALITY_RARE: {
+            case ITEM_QUALITY_RARE:
 							colorReplacement = YELLOW_COLOR_REPLACEMENT;
               break;
-            }
-            case ITEM_QUALITY_UNIQUE: {
+            case ITEM_QUALITY_UNIQUE:
 							colorReplacement = GOLD_COLOR_REPLACEMENT;
 							break;
-            }
-            default: {
-              switch (txt->nType) {
-							  case ITEM_TEXT_TYPE_RUNE:
-							  case ITEM_TEXT_TYPE_QUEST: {
-                  colorReplacement = GOLD_COLOR_REPLACEMENT;
-                  overRideQualityFilter = true;
-                  break;
-							  }
-								case ITEM_TEXT_TYPE_SMALL_CHARM:
-								case ITEM_TEXT_TYPE_LARGE_CHARM:
-								case ITEM_TEXT_TYPE_GRAND_CHARM: {
-									colorReplacement = BLUE_COLOR_REPLACEMENT;
-									overRideQualityFilter = true;
-									break;
-								}
-								case ITEM_TEXT_TYPE_AMETHYST_GEM:
-								case ITEM_TEXT_TYPE_DIAMOND_GEM:
-								case ITEM_TEXT_TYPE_EMERALD_GEM:
-								case ITEM_TEXT_TYPE_RUBY_GEM:
-								case ITEM_TEXT_TYPE_SAPPHIRE_GEM:
-								case ITEM_TEXT_TYPE_TOPAZ_GEM:
-								case ITEM_TEXT_TYPE_SKULL: {
-									colorReplacement = PURPLE_COLOR_REPLACEMENT;
-                  overRideQualityFilter = true;
-									break;
-								}
+            default:
+              if (!overRideQualityFilter && (unit->pItemData->dwQuality <= ITEM_QUALITY_SUPERIOR)) {
+                unit->dwFlags |= UNITFLAG_NO_EXPERIENCE;
+                continue;
               }
-            }
 					}
-
-          if (!overRideQualityFilter && (unit->pItemData->dwQuality <= ITEM_QUALITY_SUPERIOR)) {
-            continue;
-          }
-
-          if (unit->pItemData->dwFlags & ITEM_FLAG_ETHEREAL) {
-            colorReplacement = GRAY_COLOR_REPLACEMENT;
-            isEth = true;
-          } 
-          if (unit->pItemData->dwFlags & ITEM_FLAG_HASSOCKETS) {
-            hasSockets = true;
-            colorReplacement = GRAY_COLOR_REPLACEMENT;
-          }
-
-          std::string itemName = GetItemName(unit);
-					std::string fmtStr = "Item Dropped: %s%s L%d";
-					if (hasSockets) {
-						int numSockets = D2COMMON_GetUnitStat(unit, STAT_SOCKETS, 0);
-						if (numSockets > 0) {
-							fmtStr += " (" + std::to_string(numSockets) + ")";
-						}
-					}
-					if (isEth) {
-						fmtStr += " (Eth)";
-					}
-          PrintText(TextColor::Red, fmtStr.c_str(), colorReplacement, itemName.c_str(), unit->pItemData->dwItemLevel);
         }
+
+        std::string itemName = GetItemName(unit);
+				if (isEth && (numSockets > 0)) {
+          PrintText(TextColor::Red, ethSocketFmtStr.c_str(), colorReplacement, itemName.c_str(), unit->pItemData->dwItemLevel, numSockets);
+				}
+				else if (isEth) {
+          PrintText(TextColor::Red, ethFmtStr.c_str(), colorReplacement, itemName.c_str(), unit->pItemData->dwItemLevel);
+				}
+				else if (numSockets > 0) {
+          PrintText(TextColor::Red, socketFmtStr.c_str(), colorReplacement, itemName.c_str(), unit->pItemData->dwItemLevel, numSockets);
+				}
+				else {
+          PrintText(TextColor::Red, regularFmtStr.c_str(), colorReplacement, itemName.c_str(), unit->pItemData->dwItemLevel);
+				}
+        unit->dwFlags |= UNITFLAG_NO_EXPERIENCE;
       }
     }
 	}
