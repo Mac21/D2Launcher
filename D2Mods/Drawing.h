@@ -1,10 +1,15 @@
 #pragma once
 #include <windows.h>
 #include <string>
-#include <map>
+#include <algorithm>
+#include <array>
+
 #include "Patch.h"
 #include "D2Constants.h"
 #include "D2Offsets.h"
+
+// https://docs.microsoft.com/en-us/windows/win32/intl/code-page-identifiers
+#define CP_WINDOWS_ANSI_LATIN 1252
 
 wchar_t* AnsiToUnicode(const char* str, UINT codepage = CP_UTF8) {
 	wchar_t* buf = NULL;
@@ -12,6 +17,26 @@ wchar_t* AnsiToUnicode(const char* str, UINT codepage = CP_UTF8) {
 	buf = new wchar_t[len];
 	MultiByteToWideChar(codepage, 0, str, -1, buf, len);
 	return buf;
+}
+
+char* UnicodeToAnsi(const wchar_t* str) {
+	char* buf = NULL;
+	int len = WideCharToMultiByte(CP_WINDOWS_ANSI_LATIN, 0, str, -1, buf, 0, "?", NULL);
+	buf = new char[len];
+	WideCharToMultiByte(CP_WINDOWS_ANSI_LATIN, 0, str, -1, buf, len, "?", NULL);
+	return buf;
+}
+
+std::string GetItemCode(int dwTxtFileNo) {
+	ItemTxt* text = D2COMMON_GetItemText(dwTxtFileNo);
+	std::string code = text->szCode;
+	return code.substr(0, 3);
+}
+
+std::string GetItemName(UnitAny* item) {
+	wchar_t buffer[256] = L"";
+	D2CLIENT_GetItemName(item, buffer, 256);
+	return UnicodeToAnsi(buffer);
 }
 
 POINT CalculateTextLen(const wchar_t* szwText, int Font) {
@@ -264,13 +289,28 @@ void GameDraw_Interception(void) {
 }
 =======
 
+
+const static std::array<BYTE, 11> filteredMagicItems = {
+	ITEM_TEXT_TYPE_SHIELD,
+	ITEM_TEXT_TYPE_ARMOR,
+	ITEM_TEXT_TYPE_RING,
+	ITEM_TEXT_TYPE_AMULET,
+	ITEM_TEXT_TYPE_JEWEL,
+	ITEM_TEXT_TYPE_SMALL_CHARM,
+	ITEM_TEXT_TYPE_LARGE_CHARM,
+	ITEM_TEXT_TYPE_GRAND_CHARM,
+	ITEM_TEXT_TYPE_CIRCLET,
+	ITEM_TEXT_TYPE_AMAZON_BOW,
+	ITEM_TEXT_TYPE_AMAZON_JAV,
+};
+
 void DrawAutomapPrimitives() {
 	UnitAny* player = D2CLIENT_GetPlayerUnit();
 	if (!player || !player->pAct || !player->pPath ||
       !player->pPath->pRoom1 || !player->pPath->pRoom1->pRoom2 ||
       !player->pPath->pRoom1->pRoom2->pLevel || player->pPath->pRoom1->pRoom2->pLevel->dwLevelNo == 0)
 		return;
-	auto MyPos = ScreenToAutomap(D2CLIENT_GetUnitX(player), D2CLIENT_GetUnitY(player));
+
 	// Monster Tracking
   for (int j = 0; j < 128; ++j) {
     for (UnitAny* unit = p_D2CLIENT_ServerSideUnitHashTables[UNIT_MONSTER].table[j]; unit; unit = unit->pListNext) {
@@ -306,21 +346,99 @@ void DrawAutomapPrimitives() {
 	// Item tracking
   for (int j = 0; j < 128; j++) {
     for (UnitAny* unit = p_D2CLIENT_ServerSideUnitHashTables[UNIT_ITEM].table[j]; unit; unit = unit->pListNext) {
-			if (unit->dwType == UNIT_ITEM && (unit->dwMode == ITEM_MODE_ON_GROUND || unit->dwMode == ITEM_MODE_BEING_DROPPED)) {
-				if (unit->pItemData->dwQuality >= ITEM_QUALITY_SUPERIOR) {
-					ItemTxt* txt = D2COMMON_GetItemText(unit->dwTxtFileNo);
-					if (txt) {
-            PrintText(TextColor::Red, "ÿc4Item Dropped:ÿc1 %s", txt->szName2);
+			if (unit->dwType == UNIT_ITEM &&
+          (unit->dwFlags & UNITFLAG_NO_EXPERIENCE) == 0x0 &&
+          (unit->dwMode == ITEM_MODE_ON_GROUND || unit->dwMode == ITEM_MODE_BEING_DROPPED)) {
+				unit->dwFlags |= UNITFLAG_NO_EXPERIENCE;
+        ItemTxt* txt = D2COMMON_GetItemText(unit->dwTxtFileNo);
+        if (txt) {
+					const char* colorReplacement = WHITE_COLOR_REPLACMENT;
+					bool isEth = false;
+					bool hasSockets = false;
+					bool overRideQualityFilter = false;
+
+					switch (unit->pItemData->dwQuality) {
+            case ITEM_QUALITY_MAGIC: {
+							if (!std::binary_search(filteredMagicItems.begin(), filteredMagicItems.end(), txt->nType)) {
+								continue;
+							}
+							colorReplacement = BLUE_COLOR_REPLACEMENT;
+              break;
+            }
+            case ITEM_QUALITY_SET: {
+							colorReplacement = GREEN_COLOR_REPLACEMENT;
+							break;
+            }
+            case ITEM_QUALITY_RARE: {
+							colorReplacement = YELLOW_COLOR_REPLACEMENT;
+              break;
+            }
+            case ITEM_QUALITY_UNIQUE: {
+							colorReplacement = GOLD_COLOR_REPLACEMENT;
+							break;
+            }
+            default: {
+              switch (txt->nType) {
+							  case ITEM_TEXT_TYPE_RUNE:
+							  case ITEM_TEXT_TYPE_QUEST: {
+                  colorReplacement = GOLD_COLOR_REPLACEMENT;
+                  overRideQualityFilter = true;
+                  break;
+							  }
+								case ITEM_TEXT_TYPE_SMALL_CHARM:
+								case ITEM_TEXT_TYPE_LARGE_CHARM:
+								case ITEM_TEXT_TYPE_GRAND_CHARM: {
+									colorReplacement = BLUE_COLOR_REPLACEMENT;
+									overRideQualityFilter = true;
+									break;
+								}
+								case ITEM_TEXT_TYPE_AMETHYST_GEM:
+								case ITEM_TEXT_TYPE_DIAMOND_GEM:
+								case ITEM_TEXT_TYPE_EMERALD_GEM:
+								case ITEM_TEXT_TYPE_RUBY_GEM:
+								case ITEM_TEXT_TYPE_SAPPHIRE_GEM:
+								case ITEM_TEXT_TYPE_TOPAZ_GEM:
+								case ITEM_TEXT_TYPE_SKULL: {
+									colorReplacement = PURPLE_COLOR_REPLACEMENT;
+                  overRideQualityFilter = true;
+									break;
+								}
+              }
+            }
 					}
-				}
+
+          if (!overRideQualityFilter && (unit->pItemData->dwQuality <= ITEM_QUALITY_SUPERIOR)) {
+            continue;
+          }
+
+          if (unit->pItemData->dwFlags & ITEM_FLAG_ETHEREAL) {
+            colorReplacement = GRAY_COLOR_REPLACEMENT;
+            isEth = true;
+          } 
+          if (unit->pItemData->dwFlags & ITEM_FLAG_HASSOCKETS) {
+            hasSockets = true;
+            colorReplacement = GRAY_COLOR_REPLACEMENT;
+          }
+
+          std::string itemName = GetItemName(unit);
+					std::string fmtStr = "Item Dropped: %s%s L%d";
+					if (hasSockets) {
+						int numSockets = D2COMMON_GetUnitStat(unit, STAT_SOCKETS, 0);
+						if (numSockets > 0) {
+							fmtStr += " (" + std::to_string(numSockets) + ")";
+						}
+					}
+					if (isEth) {
+						fmtStr += " (Eth)";
+					}
+          PrintText(TextColor::Red, fmtStr.c_str(), colorReplacement, itemName.c_str(), unit->pItemData->dwItemLevel);
+        }
       }
     }
 	}
-
 }
 
 void GameAutomapDraw(void) {
-	auto MyPos = ScreenToAutomap(D2CLIENT_GetUnitX(D2CLIENT_GetPlayerUnit()), D2CLIENT_GetUnitY(D2CLIENT_GetPlayerUnit()));
 	DrawAutomapPrimitives();
 }
 
