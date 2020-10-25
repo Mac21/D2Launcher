@@ -1,4 +1,5 @@
 #pragma once
+
 #ifndef _CONSTANTS_H
 #define _CONSTANTS_H
 
@@ -20,6 +21,7 @@ enum TextColor {
 };
 
 enum BoxTrans { BTThreeFourths, BTOneHalf, BTOneFourth, BTWhite, BTBlack, BTNormal, BTScreen, BTHighlight, BTFull };
+
 //////////////////////////////////////////////////////////////////////
 // Attack Types
 //////////////////////////////////////////////////////////////////////
@@ -888,6 +890,66 @@ enum { CLASS_AMA = 0, CLASS_SOR, CLASS_NEC, CLASS_PAL, CLASS_BAR, CLASS_DRU, CLA
 #define MAP_A5_FURNACE_OF_PAIN 0x87
 #define MAP_A5_TRISTRAM 0x88
 
+//https://d2mods.info/forum/viewtopic.php?p=487011#p487011
+//UnitAny 0xC4
+enum UNITFLAG
+{
+	UNITFLAG_MODE = 0x00000001,       // Sends mode updates via D2GAME.6FC4C520.
+	UNITFLAG_SELECTABLE = 0x00000002,       // Unit is selectable.
+	UNITFLAG_ATTACKABLE = 0x00000004,       // Unit is attackable.
+	UNITFLAG_SEARCHABLE = 0x00000008,       // Unit can be seen by target searching functions (aura, curse).
+	UNITFLAG_NEW = 0x00000010,       // Sends entire unit to the client.
+	UNITFLAG_NO_SHADOW = 0x00000020,       // Unit doesn't have a shadow.
+	UNITFLAG_FINISHED = 0x00000040,       // Unit has executed the current skill's 'do' function.
+	UNITFLAG_PREOPERATED = 0x00000080,       // Tells the game that this object has been pre-operated (that is, it should not change its mode again during initialization).
+	UNITFLAG_CHATMESSAGE = 0x00000100,       // Sends pUnit->pChatMessage (overlay text).
+	UNITFLAG_HIRELING = 0x00000200,       // Unit is a hireling.
+	UNITFLAG_SOUND = 0x00000400,       // Sends pUnit->eSoundMessage.
+	UNITFLAG_UMOD = 0x00000800,       // Sends the monster's UMods to the client if MONSTERUPDATE_UMOD is set in pMonsterData->dwUpdateMask.
+	UNITFLAG_FLIPPY = 0x00001000,       // When adding an item to a room this tells the game to send ITEMMODE_DROP instead of ITEMMODE_ROOM.
+	UNITFLAG_UPDATE = 0x00002000,       // Set for units that're inside the pRoom->pUnitUpdateList update queue (which is the core controller for updates).
+	UNITFLAG_SEQUENCE_TRANSITION = 0x00004000,       // Set when a animation sequence transitions from one mode to the next.
+	UNITFLAG_SOFTHIT = 0x00008000,       // Sends the unit's current HP percent and hitclass (pUnit->dwHitClass) to the client.
+	UNITFLAG_DEAD = 0x00010000,       // The unit is to be considered dead even if its mode is not DD or DT.
+	UNITFLAG_NO_TREASURE = 0x00020000,       // This unit never drops items, even if it has a treasure class.
+	UNITFLAG_MONSTERMODE = 0x00080000,       // Set when SMONSTER_SetMode successfully changes the monster's mode.
+	UNITFLAG_PREDRAW = 0x00100000,       // Draw this unit as if it were a ground tile.
+	UNITFLAG_ASYNC = 0x00200000,       // This unit exists only on the client (critters).
+	UNITFLAG_CLIENT = 0x00400000,       // This is set for all units created on the client.
+	UNITFLAG_DELETE = 0x00800000,       // When this is set CUNIT_DoFrame will not process this unit and delete it if it is an async unit.
+	UNITFLAG_PRESET = 0x01000000,       // Set for units that're created through GAME_SpawnPresets. Some other places also set this, usually related to quest units.
+	UNITFLAG_RESTORE = 0x02000000,       // Unit will always be saved by SUNIT_Deactivate even if it is a corpse or opened object.
+	UNITFLAG_NO_EXPERIENCE = 0x04000000,       // This unit doesn't give experience when slain.
+	UNITFLAG_SEEN = 0x10000000,       // This unit was drawn.
+	UNITFLAG_REVEALED = 0x20000000,       // This unit was added to the automap (shrines).
+	UNITFLAG_PETIGNORE = 0x40000000,       // This unit is ignored by pets.
+	UNITFLAG_PET = 0x80000000        // This unit is a pet.
+};
+
+//UnitAny 0xC8
+enum UNITFLAGEX
+{
+	UNITFLAGEX_INVENTORY = 0x00000001,       // Dispatches hInventory->hUpdates. Objects also check this which will lead to undefined behavior when set because they don't have an inventory.
+	UNITFLAGEX_2 = 0x00000002,       // Set by D2SetInventoryUpdateMessage alongside UNITFLAGEX_INVENTORY if the unit is a player.
+	UNITFLAGEX_MERCHANT_INVENTORY_PUT = 0x00000004,       // Adds the item to an NPC's trade inventory (sell to NPC).
+	UNITFLAGEX_DISGUISED = 0x00000008,       // This unit is using another unit's graphics (shapechange).
+	UNITFLAGEX_MERCHANT_INVENTORY_TAKE = 0x00000010,       // Removes an item from an NPC's trade inventory (buy from NPC).
+	UNITFLAGEX_REMOVE = 0x00000020,       // If this is set alongside UNITFLAG_DELETE the client will send CMESSAGE_TELEPORT which instructs the server to set UNITFLAGEX_TELEPORTED. Must be some legacy junk.
+	UNITFLAGEX_CONVERTING = 0x00000040,       // Set while the cursor is in conversion mode (legacy).
+	UNITFLAGEX_VISIBLE = 0x00000080,       // Unit is within line of sight of the player.
+	UNITFLAGEX_DEACTIVATED = 0x00000100,       // Set for units that have been deactivated by SUNIT_Deactivate.
+	UNITFLAGEX_REACTIVATED = 0x00000200,       // Set for units that have been reactivated by SUNIT_Reactivate.    
+	UNITFLAGEX_OWNED = 0x00000400,       // This unit has an owner stored at pUnit->dwOwnerID and pUnit->eOwnerTOU (usually used by missile, but also set for pets).
+	UNITFLAGEX_POSITIONED = 0x00000800,       // SMESSAGE_SETUNITPOS, bFadeOutScreen = FALSE.
+	UNITFLAGEX_MOVING = 0x00002000,       // Set for critters while they're moving on the client.
+	UNITFLAGEX_TEMPORARY = 0x00008000,       // Items with this bit set are not saved to the D2S.
+	UNITFLAGEX_TELEPORTED = 0x00010000,       // SMESSAGE_SETUNITPOS, bFadeOutScreen = TRUE.
+	UNITFLAGEX_ATTACKED = 0x00020000,       // The unit has been attacked and is storing details of the attacker in pUnit->dwAttackerID and pUnit->eAttackerTOU.
+	UNITFLAGEX_INVISIBLE = 0x00040000,       // The unit is invisible and will be ignored by the drawing code completely.
+	UNITFLAGEX_EXPANSION = 0x02000000,       // This is a unit in an expansion game.
+	UNITFLAGEX_SERVER = 0x04000000,       // This is set for all units created on the server.
+};
+
 ///////////////////////////////////////////////////
 // Item Flags (From D2jsp scripting document)
 ///////////////////////////////////////////////////
@@ -902,6 +964,69 @@ enum { CLASS_AMA = 0, CLASS_SOR, CLASS_NEC, CLASS_PAL, CLASS_BAR, CLASS_DRU, CLA
 #define ITEM_FLAG_ETHEREAL 0x00400000     // Ethreal
 #define ITEM_FLAG_PERSONALIZED 0x01000000 // Personalized
 #define ITEM_FLAG_RUNEWORD 0x04000000     // Runeword
+
+///////////////////////////////////////////////////
+// Item Text Types
+///////////////////////////////////////////////////
+#define ITEM_TEXT_TYPE_SHIELD 2
+#define ITEM_TEXT_TYPE_ARMOR 3
+#define ITEM_TEXT_TYPE_GOLD 4
+#define ITEM_TEXT_TYPE_ARROW 5
+#define ITEM_TEXT_TYPE_BOLT 6
+#define ITEM_TEXT_TYPE_PLAYER_BODY_PART 7
+#define ITEM_TEXT_TYPE_HERB 8
+#define ITEM_TEXT_TYPE_RING 10
+#define ITEM_TEXT_TYPE_AMULET 12
+#define ITEM_TEXT_TYPE_BOOT 15 // War Travelers, etc.
+#define ITEM_TEXT_TYPE_GLOVE 16 // Chance Guards, etc.
+#define ITEM_TEXT_TYPE_BELT 19 // Spiderweb Sash, etc.
+#define ITEM_TEXT_TYPE_SCROLL 22 // Scroll Of Identify, Scroll Of Town Portal, etc.
+#define ITEM_TEXT_TYPE_SCEPTER 24 // Scepters, etc.
+#define ITEM_TEXT_TYPE_WAND 25 // Wands, etc.
+#define ITEM_TEXT_TYPE_STAFF 26 // Staff, etc.
+#define ITEM_TEXT_TYPE_BOW 27 // Long bow, etc.
+#define ITEM_TEXT_TYPE_AXE 28 // Great Axe, etc.
+#define ITEM_TEXT_TYPE_CLUB 29 // Cudgel, etc.
+#define ITEM_TEXT_TYPE_SWORD 30 // Crystal Sword, Phase Blade, etc.
+#define ITEM_TEXT_TYPE_HAMMER 31 // Battle Hammer, etc.
+#define ITEM_TEXT_TYPE_KNIFE 32 // Knives, wizspike, etc.
+#define ITEM_TEXT_TYPE_SPEAR 33 // Spears, etc.
+#define ITEM_TEXT_TYPE_POLEARM 34 // Colossus Volgue, Thresher, etc.
+#define ITEM_TEXT_TYPE_CROSSBOW 35 // Crossbows.
+#define ITEM_TEXT_TYPE_MACE 36 // Flail, Knout, etc.
+#define ITEM_TEXT_TYPE_HELM 37 // All non class specific helms.
+#define ITEM_TEXT_TYPE_QUEST 39 // Key Of Destruction, Key Of Hate, Key Of Terror, Tokens, etc.
+#define ITEM_TEXT_TYPE_BODY_PART 40 // Maybe Diablo's horn etc?
+#define ITEM_TEXT_TYPE_KEY 41
+#define ITEM_TEXT_TYPE_JAVELIN 44 // Superior Javelin, etc.
+#define ITEM_TEXT_TYPE_STAVES_AND_RODS 55 // Ribcracker, etc.
+#define ITEM_TEXT_TYPE_JEWEL 58
+#define ITEM_TEXT_TYPE_HAND_2_HAND 67 // Bartuc's cuthroat, claws, etc.
+#define ITEM_TEXT_TYPE_ORB 68 // Occulus, etc.
+#define ITEM_TEXT_TYPE_HEAD 69 // Necro offhands.
+#define ITEM_TEXT_TYPE_AURIC_SHIELDS 70 // Paladin shields e.g. Sacret Targe.
+#define ITEM_TEXT_TYPE_PRIMAL_HELM 71 // Barb helms.
+#define ITEM_TEXT_TYPE_PELT 72 // Druid antlers, falcons, etc.
+#define ITEM_TEXT_TYPE_CLOAK 73 // Assassin items
+#define ITEM_TEXT_TYPE_RUNE 74
+#define ITEM_TEXT_TYPE_CIRCLET 75 // Diadem, Circlet, Coronet, etc.
+#define ITEM_TEXT_TYPE_HEALTH_POT 76
+#define ITEM_TEXT_TYPE_MANA_POT 77
+#define ITEM_TEXT_TYPE_REJUV_POT 78
+#define ITEM_TEXT_TYPE_SMALL_CHARM 82
+#define ITEM_TEXT_TYPE_LARGE_CHARM 83
+#define ITEM_TEXT_TYPE_GRAND_CHARM 84
+#define ITEM_TEXT_TYPE_AMAZON_BOW 85
+#define ITEM_TEXT_TYPE_AMAZON_SPEAR 86
+#define ITEM_TEXT_TYPE_AMAZON_JAV 87 // Titan's Revenge, etc.
+#define ITEM_TEXT_TYPE_HAND_TO_HAND_2 88 // Quhab's, etc.
+#define ITEM_TEXT_TYPE_AMETHYST_GEM 96
+#define ITEM_TEXT_TYPE_DIAMOND_GEM 97
+#define ITEM_TEXT_TYPE_EMERALD_GEM 98
+#define ITEM_TEXT_TYPE_RUBY_GEM 99
+#define ITEM_TEXT_TYPE_SAPPHIRE_GEM 100
+#define ITEM_TEXT_TYPE_TOPAZ_GEM 101
+#define ITEM_TEXT_TYPE_SKULL 102
 
 ///////////////////////////////////////////////////
 // Unit Stat ID Definition
